@@ -10,7 +10,7 @@
 In active use.
 ### Downloading
 
-The core library and all extensions are available from [GitHub](http://github.com/lisp/de.setf.utility).
+The core library and all extensions are available from [GitHub](http://github.com/lisp/de.setf.atn-parser).
 
 ### Building
 

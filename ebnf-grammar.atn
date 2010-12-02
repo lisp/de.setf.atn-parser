@@ -24,7 +24,7 @@
   id-begin ::= '{'
   id-end ::= '}'
   rhs ::= (qexpr+ | alternative) procedures?
-  qexpr ::= (symbol | group | tokenset | table-cell) occurrence?
+  qexpr ::= (bnfsymbol | group | tokenset | table-cell) occurrence?
   group ::= leftpar (qexpr+ | alternative) procedures? rightpar
   alternative ::= qexpr oneof (qexpr | alternative) 
 
@@ -45,7 +45,7 @@
   proc-name ::= token
   proc-args ::= left-args-par token* right-args-par
 
-  symbol ::= terminal | nonterminal
+  bnfsymbol ::= terminal | nonterminal
   nonterminal ::= token
   terminal ::= terminal-delimiter token terminal-delimiter
   terminal-delimiter ::= '''
@@ -262,16 +262,15 @@
    (proc-args5
     (pop proc-args))))
 
-;;; SYMBOL
-;;; this should well be renamed to avoid the conflict with cl:symbol
+;;; BNFSYMBOL
 
-(defatn symbol symbol1
+(defatn bnfsymbol symbol1
   :nodes
   ((symbol1
     (cat nonterminal symbol2)
     (push terminal symbol2))
    (symbol2
-    (pop symbol))))
+    (pop bnfsymbol))))
 
 ;;; TERMINAL
 
@@ -339,7 +338,7 @@
 (defatn qexpr qexpr1
   :nodes
   ((qexpr1 
-    (push symbol qexpr2)
+    (push bnfsymbol qexpr2)
     (push group qexpr2)
     (push tokenset qexpr2)
     (push table-cell qexpr2))

@@ -669,7 +669,7 @@
                      (\+ 'bnf-plus-expr)
                      (t 'bnf-one-expr))
       :expression
-      (let ((next (or (find 'symbol forms :key #'car)
+      (let ((next (or (find 'bnf-symbol forms :key #'car)
                       (find 'group forms :key #'car)
                       (find 'tokenset forms :key #'car)
                       (find 'table-cell forms :key #'car))))
@@ -706,10 +706,10 @@
       (mapcar #'(lambda (x) (build-bnf-expr (first x) (rest x)))
               (butlast (rest (if procedures (remove procedures forms) forms)))))))
 
-(defmethod build-bnf-expr ((object (eql 'symbol)) name)
+(defmethod build-bnf-expr ((object (eql 'bnf-symbol)) name)
   (ensure-bnf-symbol name))
 
-(defmethod build-bnf-expr ((object (eql 'symbol)) (subform cons))
+(defmethod build-bnf-expr ((object (eql 'bnf-symbol)) (subform cons))
   (let ((form (if (rest subform) (second subform) (first subform))))
     (build-bnf-expr (first form) (rest form))))
 

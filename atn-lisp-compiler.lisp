@@ -242,11 +242,15 @@
           (print `(in-package ,(package-name *package*)) stream)
           (map nil #'(lambda (definition)
                        (when (and (consp definition) (eq (first definition) 'defun))
-                         (print (list 'declaim
-                                      ; the &optional is no longer necessary as everything returns all values
-                                      ;`(ftype (function (t) (values t &optional t t)) ,(second definition))
-                                      `(ftype (function (t) (values t t t)) ,(second definition)))
-                                stream)))
+                         (let ((parameters (third definition)))
+                           (print (list 'declaim
+                                        ; the &optional is no longer necessary as everything returns all values
+                                        ;`(ftype (function (t) (values t &optional t t)) ,(second definition))
+                                        ;; satisfy strict declaim processing
+                                        `(ftype (function (t ,@(when (find '&key parameters) '(&key))
+                                                             ,@(when (find '&allow-other-keys parameters) '(&allow-other-keys)))
+                                                          (values t t t)) ,(second definition)))
+                                stream))))
                form)
           (if (eq (first form) 'progn)
             (mapcar #'(lambda (form) (pprint form stream)) (rest form))

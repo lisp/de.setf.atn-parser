@@ -80,6 +80,18 @@
                       :funcallable-standard-class
                       :validate-superclass)
   (:export
+   :%ATN-BLOCK
+   :%ATN-EDGE-BLOCK
+   :%ATN-NODE-BLOCK
+   :%ATN-TRACE
+   :%ATN-TRACE-FORM
+   :ATN-PARSE-SUBSTRUCTURE*
+   :|wfst-initialize|
+   :|wfst-adjust|
+   :|wfst-push|
+   :|wfst-entry|
+   :|wfst-push-entry|
+   :*ATN-REDUCE*
    :*atn-class
    :*atn-level
    :*atn-net

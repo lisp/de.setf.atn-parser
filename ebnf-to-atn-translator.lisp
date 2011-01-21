@@ -49,7 +49,7 @@
       ; (inspect bnf-grammar)
       (setf main-net-name (intern (bnf-name bnf-grammar)))
       (setf (system-parser-name atn-system)
-            (intern (format nil "~A-Parser" main-net-name)))
+            (intern (format nil "~A-Parser" main-net-name) *atn-source-package*))
       (unless defined-system
         (setf (system-name atn-system) main-net-name))
       (setf (system-main-net-name atn-system) main-net-name)
@@ -437,7 +437,7 @@
                    (return symbol)))
                (ecase if-does-not-exist
                  ((nil) nil)
-                 (:create (intern (format nil "IS-~a" name)))
+                 (:create (intern (format nil "IS-~a" name) *atn-source-package*))
                  (:error (error "no predicate for name: ~a." name))
                  (:warn (warn "no predicate for name: ~a." name)))))
   (:method ((category cl:symbol) &rest args)
@@ -784,7 +784,7 @@
       (build-atn-nodes *netname start (bnf-rhs object) (build-node-name))
       ; (map nil #'print *netnodes)
       (let ((net (atn-canonic-form 'defatn 
-                                   (list (intern *netname) start :nodes 
+                                   (list (intern *netname *atn-source-package*) start :nodes 
                                          *netnodes))))
         (setf (atn-procedures net) (bnf-procedures object)
               (atn-terms net) (sort *expression-terms* #'name-lessp
@@ -800,7 +800,7 @@
 (defun build-node-name (&optional to)
   ;; the name must always get a suffix to distinguish terms which appear more than once
   (declare (special *counter *netname))
-  (intern (format nil "~A~@[/~a~].~d" *netname to (incf *counter))))
+  (intern (format nil "~A~@[/~a~].~d" *netname to (incf *counter)) *atn-source-package*))
 
 (defun ensure-node (node-name)
   (declare (special *netnodes))

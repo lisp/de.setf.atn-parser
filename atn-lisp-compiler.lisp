@@ -139,11 +139,18 @@
 ;; token package, non-terminals to the current package
 
 (defun ensure-token (thing)
-  (unless (packagep *atn-token-package*)
-    (error "token package not bound: ~s" *atn-token-package*))
-  (if (stringp thing) (Intern thing *atn-token-package*) thing))
+  (assert (packagep *atn-token-package*) ()
+          "invalid token package: ~s" *atn-token-package*)
+  (etypecase thing
+    (string (Intern thing *atn-token-package*))
+    (symbol thing)))
+
 (defun ensure-symbol (thing)
-  (if (stringp thing) (intern thing) thing))
+  (assert (packagep *atn-source-package*) ()
+          "invalid source package: ~s" *atn-source-package*)
+  (etypecase thing
+    (string (Intern thing *atn-source-package*))
+    (symbol thing)))
 
 ;;
 ;;
@@ -164,7 +171,8 @@
       where no <code>SOURCE-PATHNAME</code> argument is provided, the current load pathname is used. should none
       be available, an error is signaled.</li>
      <li><code>:EXECUTE</code> when non-null, the definition is interpreted directly.</li>
-     <li><code>:PACKAGE</code> (bound special to <code>*ATN-TOKEN-PACKAGE*</code>.) 
+     <li><code>:SOURCE-PACKAGE</code> retuired</li> 
+     <li><code>:TOKEN-PACKAGE</code> (bound special to <code>*ATN-TOKEN-PACKAGE*</code>.) 
       specifies the package in which parsed tokens are to be found.
       this must agree with the implemented tokenizer. bound, by default, to <code>*PACKAGE*</code>.</li>
      <li><code>:PATHNAME</code> specifies the destination file for source to be used for compilation.</li>
@@ -204,12 +212,13 @@
                                ((:ambiguous *atn-ambiguous) nil)
                                ((:input-eof-function *atn-input-eof-function) '|input.is-at-end|)
                                ((:input-function *atn-input-function) '|input.item|)
-                               ((:package *atn-token-package*) *package*)
+                               ((:token-package *atn-token-package*) *package*)
+                               ((:source-package *atn-source-package*) *package*)
                                ((:parser-name *parser-name) (system-parser-name *grammar-system))
                                ((:register-words *atn-register-words) nil)
                                ((:start-name *atn-start-name) (system-main-net-name *grammar-system))
                                ((:tokenizer-name *tokenizer-name)
-                                (intern (concatenate 'string (string *atn-start-name) "-Tokenizer")))
+                                (intern (concatenate 'string (string *atn-start-name) "-Tokenizer") *atn-source-package*))
                                ((:trace *atn-trace*) *atn-trace*)
                                ((:wfst *atn-wfst) *atn-ambiguous)
                                ((:word-predicate *atn-word-predicate) 'eq)
@@ -217,16 +226,21 @@
                                &aux
                                ;; grammar-binding
                                (*system-lexicon (system-lexicon *grammar-system)))
-  "compile an atn system. may be directly evaluated oremitted to a file and compiled from there."
+  "compile an atn system. may be directly evaluated or emitted to a file and compiled from there."
   (declare (special *grammar-system *parser-name *system-lexicon *tokenizer-name))
   (declare (ignore report-recursion))  ;; to permit the compiler to be used with older parser versions
+  (setq *atn-source-package* (or (find-package *atn-source-package*)
+                                 "source package is invalid: ~s." *atn-source-package*))
+  (setq *atn-token-package* (or (find-package *atn-token-package*)
+                                 "token package is invalid: ~s." *atn-token-package*))
+  (unless (or source-pathname *compile-file-pathname*)
+    (error "no output pathname provided."))
+    
   (multiple-value-bind (form name)
                        (make-lisp-form *grammar-system)
     #|(setf grammar-binding
           `(defParameter ,(intern (concatenate 'string "*" (string name) "-GRAMMAR*"))
              ,(system-documentation *grammar-system)))|#
-    (unless (or source-pathname *compile-file-pathname*)
-      (error "no output pathname provided."))
     (let ((output-pathname
            (or source-pathname (make-pathname :name (format nil "~a-grammar" *atn-start-name)
                                        :directory '(:relative "ATN-LIB")
@@ -237,9 +251,9 @@
         ;; rebind the reader package to this package in order to improve legibility.
         ;; all cl and bnfp symbols should be unprefixed. only application-specifics
         ;; will have prefixes
-        (let ((*package* (find-package "BNF-PARSER"))
+        (let ((*package* *atn-source-package*)
               (*print-right-margin* 132))
-          (print `(in-package ,(package-name *package*)) stream)
+          (print `(in-package ,(package-name *atn-source-package*)) stream)
           (map nil #'(lambda (definition)
                        (when (and (consp definition) (eq (first definition) 'defun))
                          (let ((parameters (third definition)))
@@ -273,9 +287,15 @@
       
 (defMethod compile-atn-system ((*grammar string) &rest keys
                                &key ((:register-words *atn-register-words) nil)
+                               ((:token-package *atn-token-package*) *package*)
+                               ((:source-package *atn-source-package*) *package*)
                                &allow-other-keys)
   "compile a bnf grammar to an atn system and from there to a lisp parser implementation."
   (declare (special *grammar))
+  (setq *atn-source-package* (or (find-package *atn-source-package*)
+                                 "source package is invalid: ~s." *atn-source-package*))
+  (setq *atn-token-package* (or (find-package *atn-token-package*)
+                                 "token package is invalid: ~s." *atn-token-package*))
   (let ((atn-system (bnf-to-atn *grammar)))
     (cond (atn-system
            (apply #'compile-atn-system atn-system keys))
@@ -894,7 +914,7 @@
          (word (atn-word node))
          (word-test nil)
          ;; intern it into the application's package
-         (word-register (when *atn-register-words (intern (format nil "Word-~a" word))))
+         (word-register (when *atn-register-words (intern (format nil "Word-~a" word) *atn-source-package*)))
          (cardinality (atn-term-cardinality atn word-register))
          (term-names (atn-term-names node))
          (constructor-specializer (atn-constructor-specializer node)))
@@ -940,7 +960,8 @@
    methods to serve as second level generation operations with a distinct operator space."
   (let ((name (make-lisp-predicate-name category :if-does-not-exist :create))
         (elements (category-elements category)))
-    (when (null name) (break))
+    (assert (not (null name)) ()
+            "category name may not be null: ~s." category)
     `(,name (item)
             (%atn-trace-form (and item (or ,@(mapcar #'make-lisp-subform elements)))))))
 
@@ -1019,7 +1040,7 @@
 
 (defMethod make-constructor-name ((node t) name)
   (declare (special *undefined-constructors))
-  (setf name (intern (concatenate 'string (string name) "-Constructor")))
+  (setf name (intern (concatenate 'string (string name) "-Constructor") *atn-source-package*))
   (unless (fboundp name)
     ;; (break)
     (pushnew name *undefined-constructors))

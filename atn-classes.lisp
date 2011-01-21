@@ -50,6 +50,10 @@
   (flet ((name-equal (x) (string-equal (string (atn-name x)) name)))
     (find-if #'name-equal (system-nets object))))
 
+(defmethod system-main-net ((system atn-system))
+  (or (get-atn system (system-main-net-name system))
+      (error "Undefined net: system ~a; net ~a" system (system-main-net-name system))))
+
 #|
 (defmethod system-lexical-rules ((system atn-system))
   (lexical-rules (system-grammar system)))
@@ -115,12 +119,16 @@
 
 (defmethod print-object ((object atn) stream)
   (if *print-pretty*
-    (format stream "(defatn ~A ~A ~@[~%  :nodes (~{~A~^~%~})~])"
+    (format stream "(defatn ~A ~A ~@[~%  :nodes (~{~A~^~%~10t~})~])"
             (atn-name object)
             (atn-start object)
             (atn-nodes object))
     (print-unreadable-object (object stream :type t)
       (format stream "~A {~D}" (atn-name object) (length (atn-nodes object))))))
+
+(defmethod atn-start-node ((net atn))
+  (or (find (atn-start net) (atn-nodes net) :key #'atn-name)
+      (error "Undefined node: net ~a; node ~a" net (atn-start net))))
 
 (defMethod atn-term-cardinality ((node atn) name)
   (rest (assoc name (atn-terms node) :test #'string=)))
@@ -163,11 +171,22 @@
 
 (defmethod print-object ((object atn-node) stream)
   (if *print-pretty*
-    (format stream "(~A ~{~%~A~})"
+    (format stream "(|~A|~48t~{ ~A~})"
             (atn-name object)
             (atn-edges object))
     (print-unreadable-object (object stream :type t)
       (write (atn-name object) :stream stream))))
+
+(defmethod atn-net-atn ((atn-node atn-node))
+  "Return the net instance designated by the respective net in the context of the respective system"
+  (let ((net (atn-net atn-node))
+        (system (atn-system atn-node)))
+    (or (get-atn system net)
+        (error "Undefined net: system ~a; net ~a" system net))))
+
+(defmethod atn-system ((atn-node atn-node))
+  (atn-system (atn-net atn-node)))
+
 
 ;;; Kanten
 
@@ -184,8 +203,16 @@
     (format stream "~s/?~s/~s"
             (atn-start object) (atn-test object) (atn-actions object))))
 
+(defmethod atn-net-atn ((edge atn-edge))
+  "Return the net instance designated by the respective net in the context of the respective system"
+  (let* ((net (atn-net edge))
+         (node (atn-node edge))
+         (system (atn-system node)))
+    (or (get-atn system net)
+        (error "Undefined net: system ~a; net ~a" system net))))
+
 ;; 20010331.jaa added an explicit fail continuation to the transition edge.
-;; otherwise an edge sequenc eis necessary, whereby the succeedor transition
+;; otherwise an edge sequence is necessary, whereby the successor transition
 ;; in the sequence is taken both for success and failure.
 ;; this makes it difficult to code for tail calls when translating.
 (defclass atn-transition (atn-edge)
@@ -206,16 +233,15 @@
 
 (defmethod print-object ((object pop-atn-edge) stream)
   (if *print-pretty*
-    (format stream "(pop ~A)"
+    (format stream "(pop |~A|)"
             (atn-register object))
     (call-next-method)))
 
 (defClass fail-atn-edge (atn-edge) ())
 
-(defmethod print-object ((object fail-atn-edge) stream)
+(defmethod print-object ((object fail-atn-edge) stream);  (break)
   (if *print-pretty*
-    (format stream "(fail ~A)"
-            (atn-register object))
+    (format stream "#|fail|#")
     (call-next-method)))
 
 (defclass word-atn-edge (consume-atn-edge)
@@ -236,7 +262,7 @@
 
 (defmethod print-object ((object cat-atn-edge) stream)
   (if *print-pretty*
-    (format stream "(cat ~A ~A)"
+    (format stream "(cat |~A| ~A)"
             (atn-cat object)
             (atn-end object))
     (call-next-method)))
@@ -246,7 +272,7 @@
 
 (defmethod print-object ((object push-atn-edge) stream)
   (if *print-pretty*
-    (format stream "(push ~A ~A)"
+    (format stream "(push |~A| |~A|)"
             (atn-net object)
             (atn-end object))
     (call-next-method)))
@@ -308,7 +334,7 @@
     argument list.")
   (:method ((node atn))
            (mapcar #'(lambda (term.cardinality &aux (c (first term.cardinality)))
-                       (if (stringp c) (intern c) c))
+                       (if (stringp c) (intern c *atn-source-package*) c))
                    (atn-terms node)))
   (:method ((node pop-atn-edge))
            (atn-term-names (atn-net (atn-node node))))
@@ -346,8 +372,10 @@
    (elements :accessor category-elements :initarg :elements :initform nil)))
 
 (defmethod print-object ((object atn-category) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~A" (category-name object))))
+  (if *print-pretty*
+    (format stream "~a" (category-name object))
+    (print-unreadable-object (object stream :type t :identity t)
+      (format stream "~A" (category-name object)))))
 
 (defclass atn-undeclared-category (atn-category)
   ())
@@ -558,7 +586,7 @@
   ;; this walks the net and interns the node names. it shoud not intern values
   ;; which are tested against input, since that package may be different from
   ;; the source package
-  ((maybe-intern (slot) `(when (stringp ,slot) (setf ,slot (intern ,slot))))
+  ((maybe-intern (slot) `(when (stringp ,slot) (setf ,slot (intern ,slot *atn-source-package*))))
    (maybe-intern-slots (slots instance)
      `(progn (with-slots ,slots ,instance
                ,@(mapcar #'(lambda (slot) `(maybe-intern ,slot)) slots)))))

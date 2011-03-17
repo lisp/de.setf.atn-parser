@@ -49,27 +49,23 @@
   (:nicknames :atnp :bnfp :bnf-parser)
   (:use :common-lisp :de.setf.utility :de.setf.clifs)
 
-  #+allegro (:import-from :excl :without-interrupts)
   #+(and allegro (version>= 6 0)) (:import-from :mop :class-precedence-list)
   #+(and allegro (version< 6 0)) (:import-from :clos :class-precedence-list)
   #+digitool (:import-from :ccl
                            :*fred-special-indent-alist*
-                           :validate-superclass
-                           :without-interrupts)
+                           :validate-superclass)
   #+genera (:import-from :clos-internals
                          :class-precedence-list
                          :funcallable-standard-class
                          :validate-superclass)
-  #+genera(:import-from :scl: without-interrupts)
   #+genera(:shadowing-import-from :si :stream)
-  #+lispworks (:import-from :lispworks :without-interrupts :validate-superclass)
-  #+cmu (:import-from :system :without-interrupts)
+  #+lispworks (:import-from :lispworks
+                            :validate-superclass)
   #+pcl (:shadowing-import-from :pcl :class-precedence-list
 				:funcallable-standard-class
 				:validate-superclass
 				:standard-class :built-in-class
 				:find-class :class-name :class-of)
-  #+sbcl (:import-from :sb-sys :without-interrupts)
   #+sbcl (:shadowing-import-from :sb-pcl :class-precedence-list
                                  :funcallable-standard-class
                                  :validate-superclass

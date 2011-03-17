@@ -20,20 +20,17 @@
   (:use :common-lisp :de.setf.utility)
   ;;(:shadow "SYMBOL")
   #+ccl (:import-from :ccl :validate-superclass :class-precedence-list)
-  #+Allegro (:import-from "EXCL" "WITHOUT-INTERRUPTS")
   #+(and Allegro (version>= 6 0)) (:import-from "MOP" "CLASS-PRECEDENCE-LIST")
   #+(and Allegro (version< 6 0)) (:import-from "CLOS" "CLASS-PRECEDENCE-LIST")
   #+Genera (:import-from "CLOS-INTERNALS" "CLASS-PRECEDENCE-LIST" "FUNCALLABLE-STANDARD-CLASS" "VALIDATE-SUPERCLASS")
-  #+Genera(:import-from "SCL" "WITHOUT-INTERRUPTS")
   #+Genera(:shadowing-import-from "SI" "STREAM")
-  #+lispworks (:import-from :lispworks :without-interrupts :validate-superclass)
-  #+CMU (:import-from "SYSTEM" "WITHOUT-INTERRUPTS")
+  #+lispworks (:import-from :lispworks
+                            :validate-superclass)
   #+PCL (:shadowing-import-from "PCL" "CLASS-PRECEDENCE-LIST"
 				"FUNCALLABLE-STANDARD-CLASS"
 				"VALIDATE-SUPERCLASS"
 				"STANDARD-CLASS" "BUILT-IN-CLASS"
 				"FIND-CLASS" "CLASS-NAME" "CLASS-OF")
-  #+SBCL (:import-from "SB-SYS" "WITHOUT-INTERRUPTS")
   #+sbcl (:shadowing-import-from "SB-PCL" "CLASS-PRECEDENCE-LIST"
                                  "FUNCALLABLE-STANDARD-CLASS"
                                  "VALIDATE-SUPERCLASS"

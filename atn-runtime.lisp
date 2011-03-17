@@ -128,14 +128,10 @@
 ;; any attempt to parse from that point on, examines the cache to determine whether a
 ;; parse already exists for the respective goal.
 
-(defun |wfst-initialize| (&optional (cache (make-array 8 :adjustable t
-                                                      :element-type 'cons
-                                                      :initial-element nil)))
-  (dotimes (i (length cache)) (setf (elt cache i) nil))
-  cache)
-
-(defun |wfst-adjust| (cache size)
-  (adjust-array cache size :element-type 'cons :initial-element nil))
+#+(or)
+(progn
+  ;; native threads would require locking the registry.
+  ;; better to just use a per-thread table with an argument added to the parse function
 
 (defun |wfst-pop| (term-name)
   (without-interrupts
@@ -145,7 +141,11 @@
 (defun |wfst-push| (term-name cache)
   (without-interrupts
    (push cache (get term-name :atn-wfst))))
+)
        
+(defun |wfst-adjust| (cache size)
+  (adjust-array cache size :element-type 'cons :initial-element nil))
+
 (defun |wfst-entry| (net index &aux cache-entry)
   (cond ((and *atn-wfst
               (> (length *atn-wfst) index)
@@ -155,6 +155,12 @@
         (t
          (%atn-trace " wfst-get: ~a ~d: no value." net index)
          nil)))
+
+(defun |wfst-initialize| (&optional (cache (make-array 8 :adjustable t
+                                                      :element-type 'cons
+                                                      :initial-element nil)))
+  (dotimes (i (length cache)) (setf (elt cache i) nil))
+  cache)
 
 (defun |wfst-push-entry| (net index structure)
   (when *atn-wfst

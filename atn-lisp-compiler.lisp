@@ -423,6 +423,8 @@
                                        ((:mode *atn-mode) :multiple)
                                        ((:reduce *atn-reduce*) t)
                                        ((:register-words *atn-register-words) nil)
+                                       ,@(when *atn-wfst
+                                           '((atn-wfst (make-array 8 :adjustable t :element-type 'list :initial-element nil) aw-s)))
                                        ;; this is likely to be wrapped in other functions, which may
                                        ;; use additional keywords
                                        &allow-other-keys
@@ -434,10 +436,13 @@
                    ,documentation
                    (declare (special *atn-reduce* *atn-mode *atn-input))
                    ;; bind the runtime state: the results and the level.
+                   ,@(when *atn-wfst
+                       '((when aw-s (|wfst-initialize| atn-wfst))))
                    (let ((*atn-level 0)
                          ,@(when *atn-wfst
-                             ;; where a wfst is enabled, use the start term to identify a table repository
-                             '((*atn-wfst (|wfst-initialize| (|wfst-pop| *atn-start-name)))))
+                             ;; where a wfst is enabled, make a sub-tree table. at one time these were cached, but
+                             ;; the management would require a thread-save registry
+                             '((*atn-wfst atn-wfst)))
                          (*atn-stack '(,*parser-name)) ; the outermost term is the name of the function
                          (*atn-node nil)
                          (*atn-properties nil)
@@ -495,8 +500,6 @@
                                                (if (or *atn-trace* *atn-wfst)
                                                  '(atn-parse-substructure *atn-start-name 0)
                                                  '(funcall *atn-start-name 0)))
-                         ,@(when *atn-wfst
-                             '((|wfst-push| *atn-start-name *atn-wfst)))
                          (cond (success
                                 (return-from ,*parser-name
                                   ,(if *atn-ambiguous

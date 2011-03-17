@@ -88,7 +88,6 @@
    :ATN-PARSE-SUBSTRUCTURE*
    :|wfst-initialize|
    :|wfst-adjust|
-   :|wfst-push|
    :|wfst-entry|
    :|wfst-push-entry|
    :*ATN-REDUCE*

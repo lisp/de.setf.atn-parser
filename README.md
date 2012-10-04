@@ -20,7 +20,7 @@ The core library and all extensions are available from [GitHub](http://github.co
 ## Licensing
 
 This version is released under version 3 of the GNU Lesser General Public License ([LGPL](http://www.gnu.org/licenses/gpl.html)).
-The core library has no external dependencies. `de.set.utility.walker` depends on runtime-sepecific introspection
+The core library has no external dependencies. `de.set.utility.walker` depends on runtime-specific introspection
 extensions. `de.setf.utility.tst.rspec` depends on posix extensions for access to syslog.
 
 --------

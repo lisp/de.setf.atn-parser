@@ -17,7 +17,7 @@
   <DELTA DATE='20010205' AUTHOR='JAA' />
   <DELTA DATE='20010209' AUTHOR='JAA'>
    changed comparisons to focus on symbols, with appropriate provisions for package
-   specifications. factored acces functionsinto separate file.</DELTA>
+   specifications. factored acces functions into separate file.</DELTA>
   <DELTA DATE='20010216' AUTHOR='JAA'>
    the code generated for alternative shouldn't be inclusive, since a bnf production
    is intended to be exclusive. to this end the distinction between inclusive and

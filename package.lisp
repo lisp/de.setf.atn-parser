@@ -59,7 +59,7 @@
                          :funcallable-standard-class
                          :validate-superclass)
   #+genera(:shadowing-import-from :si :stream)
-  #+lispworks (:import-from :lispworks
+  #+lispworks (:import-from :clos
                             :validate-superclass)
   #+pcl (:shadowing-import-from :pcl :class-precedence-list
 				:funcallable-standard-class

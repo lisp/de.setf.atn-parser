@@ -34,13 +34,13 @@
    (documentation :accessor rule-documentation
                   :initarg :documentation)))
 
-(defmethod documentation ((x rule) #-(or CMU LispWorks4 sbcl openmcl scl
+(defmethod documentation ((x rule) #-(or CMU lispworks sbcl openmcl scl
                                          (and allegro allegro-version>= (version>= 7 0))
                                          ) &optional doc-type)
   (declare (ignore doc-type))
   (slot-value x 'documentation))
 
-(defmethod (setf documentation) (doc-string (x rule) #-(or CMU LispWorks4 sbcl openmcl scl
+(defmethod (setf documentation) (doc-string (x rule) #-(or CMU lispworks sbcl openmcl scl
                                                            (and allegro allegro-version>= (version>= 7 0))
                                                            ) &optional doc-type)
   (declare (ignore doc-type))

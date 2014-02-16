@@ -144,7 +144,7 @@
 )
        
 (defun |wfst-adjust| (cache size)
-  (adjust-array cache size :element-type 'cons :initial-element nil))
+  (adjust-array cache size :element-type 'list :initial-element nil))
 
 (defun |wfst-entry| (net index &aux cache-entry)
   (cond ((and *atn-wfst

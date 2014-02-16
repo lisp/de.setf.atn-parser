@@ -230,9 +230,9 @@
   (declare (special *grammar-system *parser-name *system-lexicon *tokenizer-name))
   (declare (ignore report-recursion))  ;; to permit the compiler to be used with older parser versions
   (setq *atn-source-package* (or (find-package *atn-source-package*)
-                                 "source package is invalid: ~s." *atn-source-package*))
+                                 (error "source package is invalid: ~s." *atn-source-package*)))
   (setq *atn-token-package* (or (find-package *atn-token-package*)
-                                 "token package is invalid: ~s." *atn-token-package*))
+                                (error "token package is invalid: ~s." *atn-token-package*)))
   (unless (or source-pathname *compile-file-pathname*)
     (error "no output pathname provided."))
     

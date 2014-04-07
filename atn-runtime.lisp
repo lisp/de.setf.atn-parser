@@ -383,10 +383,10 @@
 the atn-parse-substructure and -substructure* methods are similar in that they invoke
 the parse function for the specified method. the former version is used only when either
 tracing code is generated, ot when a well-formed subtree cache is enabled.
-the latter method is ued with ambiguous grammars, to manage the multiple values.
+the latter method is used with ambiguous grammars, to manage the multiple values.
 
 well formed subtrees were necessary when the parser was written so as
-to parse exhaustively the parser parses exhaustively. otherwise the repeated reparsing,
+to parse exhaustively it will reparse subexpressions. in which case, the repeated reparsing,
 which an ambiguous grammar (such as the xpath grammar) requires, precludes working on
 expressions of meaningful length.
 |#
@@ -422,6 +422,8 @@ expressions of meaningful length.
                    (t ;; no parse was attempted (recursion guard...)
                     (values result nil nil))))))))
 
+(defparameter *atn-ambiguity-mode* :longest)
+
 (defun atn-parse-substructure* (name index)
   (multiple-value-bind (substructure is-cached)
                        (|wfst-entry| name index)
@@ -442,7 +444,17 @@ expressions of meaningful length.
            (multiple-value-bind (result success)
                                 (funcall name index)
              (cond (success
-                    (setf result (remove-duplicates result :test #'atn-structure-equalp))
+                    (ecase *atn-ambiguity-mode*
+                      (:longest
+                       (setf result (loop with longest-value = nil
+                                          with longest-length = 0
+                                          for (value . length) in result
+                                          if (> length longest-length)
+                                          do (setf longest-length length
+                                                   longest-value value)
+                                          finally (return (list (cons longest-value longest-length))))))
+                      (:all
+                       (setf result (remove-duplicates result :test #'atn-structure-equalp))))
                     (|wfst-push-entry| name index result)
                     (when (is-atn-trace)
                       (format *trace-output* "~%~VT|->| ~a/~a (~d) -> ~a" 

@@ -422,7 +422,11 @@ expressions of meaningful length.
                    (t ;; no parse was attempted (recursion guard...)
                     (values result nil nil))))))))
 
-(defparameter *atn-ambiguity-mode* :longest)
+(defparameter *atn-ambiguity-mode* :longest
+  "Indicate whether to prune the search process which is implicit in
+ the ambiguous parsing mode. If set to :longest, just the longest parse
+ remains. If set to :all, all unique parses remain. For a long document
+ which allows many alternative intermeidate parses. this can impede completion.")
 
 (defun atn-parse-substructure* (name index)
   (multiple-value-bind (substructure is-cached)

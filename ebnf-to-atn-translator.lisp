@@ -429,20 +429,20 @@
   (:method ((category atn-category) &rest args)
            (apply #'make-lisp-predicate-name (category-name category) args))
   (:method ((name string) &key (if-does-not-exist :error)
-            ((:package *package*) *package*) &aux symbol)
+            (package *atn-source-package*) &aux symbol)
            ;; 20010312 try alternatives
            (or (dolist (pattern *predicate-patterns*)
-                 (when (and (setf symbol (find-symbol (format nil pattern name)))
+                 (when (and (setf symbol (find-symbol (format nil pattern name) package))
                             (fboundp symbol))
                    (return symbol)))
                (ecase if-does-not-exist
                  ((nil) nil)
-                 (:create (intern (format nil "IS-~a" name) *atn-source-package*))
+                 (:create (intern (format nil "IS-~a" name) package))
                  (:error (error "no predicate for name: ~a." name))
                  (:warn (warn "no predicate for name: ~a." name)))))
   (:method ((category cl:symbol) &rest args)
            ;; must take care about the package here. that of the original symbol may not
-           ;; be the desired one, since tah symbol may have been external in some
+           ;; be the desired one, since the symbol may have been external in some
            ;; other package and simply visible where used. this was, eg. the case
            ;; with INCLUDE and IGNORE from the xml application
            (apply #'make-lisp-predicate-name (string category) args)))
@@ -457,9 +457,12 @@
           (if (null definition)
             ;; 20010122.jaa
             (let ((builtin-name (make-lisp-predicate-name (bnf-name bnf-symbol)
-                                                          :if-does-not-exist nil)))
+                                                          ;; 20140417
+                                                          :if-does-not-exist :create)))
               (unless (and builtin-name (fboundp builtin-name) )
-                (warn "Nonterminal ~A nicht definiert!?" (bnf-name bnf-symbol))))
+                (warn "Nonterminal ~A (as ~s) nicht definiert!?"
+                      (bnf-name bnf-symbol)
+                      builtin-name)))
             ;; (warn "~A nicht definiert!?" bnf-symbol)
             (let ((rhs (bnf-rhs definition)))
               (push bnf-symbol non-terminals)           

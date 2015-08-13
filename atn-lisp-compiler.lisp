@@ -17,7 +17,7 @@
   <DELTA DATE='20010205' AUTHOR='JAA' />
   <DELTA DATE='20010209' AUTHOR='JAA'>
    changed comparisons to focus on symbols, with appropriate provisions for package
-   specifications. factored acces functionsinto separate file.</DELTA>
+   specifications. factored acces functions into separate file.</DELTA>
   <DELTA DATE='20010216' AUTHOR='JAA'>
    the code generated for alternative shouldn't be inclusive, since a bnf production
    is intended to be exclusive. to this end the distinction between inclusive and
@@ -588,7 +588,8 @@
          (index-name (intern (concatenate 'string (string net-name) "-INDEX") (symbol-package net-name)))
          (form nil)
          (documentation (atn-documentation node))
-         (functions nil))
+         (functions nil)
+         (*atn-ambiguous (atn-ambiguous node *atn-ambiguous)))
     ;; (adjust-cardinality node nil)
     ;; (setf (get net-name :internal-time) 0) nb. should one want to enable this, the initialization must also be done at load time
     ;; (setf (get net-name :elapsed-time) 0)
@@ -829,7 +830,8 @@
          (fail (atn-fail node))
          (term-name (atn-net node))
          (end (atn-end node))
-         (cardinality (atn-term-cardinality atn term-name)))
+         (cardinality (atn-term-cardinality atn term-name))
+         (*atn-ambiguous (atn-ambiguous atn *atn-ambiguous)))
     (setf term-name (ensure-symbol term-name))
     `(%atn-edge-block (push ,term-name)
        ,@(atn-initial-actions node)

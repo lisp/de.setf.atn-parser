@@ -151,6 +151,14 @@
             (compute-atn-pop-edges (atn-nodes object)))
       pops)))
 
+(defgeneric atn-ambiguous (atn current-state)
+  (:documentation "Provide a mechanism to permits sub-nets to be parsed
+    ambiguously. The case arises for SPARQL, in which most of the gramar is
+    unambiguous - and must be parsed so given the recursion depth, but, in particular,
+    the path grammar is ambiguous.")
+  (:method ((object atn) current-state)
+    current-state))
+
 (defun compute-atn-pop-edges (nodes)
   (loop for node in nodes
         append (remove-if (complement #'pop-edge-p) (atn-edges node))))

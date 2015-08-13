@@ -14,6 +14,7 @@
    lispworks/ansi conformance</DELTA>
   <DELTA DATE='20030602'>scl</DELTA>
   <DELTA DATE='20050614'>acl version 7.0 ansi mods</DELTA>
+  <DELTA DATE='20110402'>lw 6</DELTA>
   </CHRONOLOGY>
  </DOCUMENTATION>
 |#
@@ -104,14 +105,14 @@
 
 ;; wg. CL-Konformitaet
 #-clisp
-(defmethod documentation ((x inference-system) #-(or CMU LispWorks4 sbcl openmcl scl
+(defmethod documentation ((x inference-system) #-(or CMU lispworks sbcl openmcl scl
                                                      (and allegro allegro-version>= (version>= 7 0))
                                                      ) &optional type)
   (declare (ignore type))
   (slot-value x 'doc))
 
 #-clisp
-(defmethod (setf documentation) (doc (x inference-system) #-(or CMU LispWorks4 sbcl openmcl scl
+(defmethod (setf documentation) (doc (x inference-system) #-(or CMU lispworks sbcl openmcl scl
                                                                 (and allegro allegro-version>= (version>= 7 0))
                                                                 ) &optional type)
   (declare (ignore type))

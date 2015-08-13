@@ -24,7 +24,14 @@
   #+(and Allegro (version< 6 0)) (:import-from "CLOS" "CLASS-PRECEDENCE-LIST")
   #+Genera (:import-from "CLOS-INTERNALS" "CLASS-PRECEDENCE-LIST" "FUNCALLABLE-STANDARD-CLASS" "VALIDATE-SUPERCLASS")
   #+Genera(:shadowing-import-from "SI" "STREAM")
-  #+lispworks (:import-from :lispworks
+  #+lispworks (:import-from :clos
+                            :built-in-class
+                            :class-name
+                            :class-of
+                            :class-precedence-list
+                            :find-class
+                            :funcallable-standard-class
+                            :standard-class
                             :validate-superclass)
   #+PCL (:shadowing-import-from "PCL" "CLASS-PRECEDENCE-LIST"
 				"FUNCALLABLE-STANDARD-CLASS"

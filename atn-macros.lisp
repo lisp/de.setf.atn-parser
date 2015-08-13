@@ -31,7 +31,8 @@
 
 (defvar *sequence*)
 (defvar *sequence-length*)
-(defvar *wfst-size* 2500)
+;;; (defvar *wfst-size* 2500) SPARQL was too large
+(defvar *wfst-size* 3200)
 (defparameter *wfst* (make-array *wfst-size* :initial-element nil))
 (defparameter *pprint-structure* nil)
 

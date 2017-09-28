@@ -157,7 +157,7 @@
          nil)))
 
 (defun |wfst-initialize| (&optional (cache (make-array 8 :adjustable t
-                                                      :element-type 'cons
+                                                      :element-type 'list
                                                       :initial-element nil)))
   (dotimes (i (length cache)) (setf (elt cache i) nil))
   cache)

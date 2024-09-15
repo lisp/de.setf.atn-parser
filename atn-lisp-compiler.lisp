@@ -256,12 +256,21 @@
           (print `(in-package ,(package-name *atn-source-package*)) stream)
           (map nil #'(lambda (definition)
                        (when (and (consp definition) (eq (first definition) 'defun))
+                         ;;(print definition *trace-output*)
                          (let ((parameters (third definition)))
+                           ;; (print parameters *trace-output*)
                            (print (list 'declaim
                                         ; the &optional is no longer necessary as everything returns all values
                                         ;`(ftype (function (t) (values t &optional t t)) ,(second definition))
                                         ;; satisfy strict declaim processing
-                                        `(ftype (function (t ,@(when (find '&key parameters) '(&key))
+                                        `(ftype (function (t ,@(when (find '&key parameters)
+                                                                 (cons '&key (loop for parameter in (rest (member '&key parameters))
+                                                                               until (and (symbolp parameter) (eql (char (string parameter) 0) #\&))
+                                                                               collect (cond ((consp parameter)
+                                                                                              (if (consp (first parameter))
+                                                                                                  (list (caar parameter) t)
+                                                                                                  (list (intern (string (first parameter)) :keyword) t)))
+                                                                                             (t (list (intern (string parameter) :keyword) t))))))
                                                              ,@(when (find '&allow-other-keys parameters) '(&allow-other-keys)))
                                                           (values t t t)) ,(second definition)))
                                 stream))))

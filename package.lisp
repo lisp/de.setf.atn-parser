@@ -172,12 +172,14 @@
    :input.length
    :input.peek-item
    :input.replace-item
+   :interpret-atn-system
    :is-atn-trace
    :is-reduction-enabled
    :jump-atn-edge
    :make-lisp-form
    :make-lisp-subform
    :make-lisp-test-form
+   :make-atn-interpreter
    :match-regex
    :nth-parse-result
    :or-atn-edge

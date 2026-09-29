@@ -31,6 +31,9 @@
                (:atn-file "ebnf-grammar" :depends-on ("atn-macro-to-canonic-form"))
                (:file "atn-runtime" :depends-on ("atn-classes"))
                (:file "conditions" :depends-on ("atn-classes"))
+               (:module "interpreter"
+                        :depends-on ("atn-runtime" "conditions")
+                        :components ((:file "interpreter")))
                (:file "atn-lisp-compiler" :depends-on ("atn-runtime" "conditions"))
                (:file "atn-regex" :depends-on ("atn-classes"))
                ;; the java translator is present here as documentation, as of 20010208 it has
